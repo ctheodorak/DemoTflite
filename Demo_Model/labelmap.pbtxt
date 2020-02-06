@@ -1,0 +1,19 @@
+item {
+  id: 1
+  name: 'Mavromichalis'
+}
+
+item {
+  id: 2
+  name: 'Nikitaras'
+}
+
+item {
+  id: 3
+  name: 'Plapoutas'
+}
+
+item {
+  id: 4
+  name: 'other'
+}
