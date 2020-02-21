@@ -4020,7 +4020,7 @@ node {
         dtype: DT_INT32
         int_val: 0
         int_val: -1
-        int_val: 5
+        int_val: 30
         tensor_shape {
           dim {
             size: 3
@@ -4085,7 +4085,7 @@ node {
   attr {
     key: "num_classes"
     value {
-      i: 5
+      i: 30
     }
   }
   attr {
