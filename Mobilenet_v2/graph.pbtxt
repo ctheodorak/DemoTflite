@@ -1,10 +1,10 @@
 node {
-  name: "image_tensor"
+  name: "normalized_input_image_tensor"
   op: "Placeholder"
   attr {
     key: "dtype"
     value {
-      type: DT_UINT8
+      type: DT_FLOAT
     }
   }
   attr {
@@ -12,13 +12,13 @@ node {
     value {
       shape {
         dim {
-          size: -1
+          size: 1
         }
         dim {
-          size: -1
+          size: 600
         }
         dim {
-          size: -1
+          size: 600
         }
         dim {
           size: 3
@@ -28,22 +28,10 @@ node {
   }
 }
 node {
-  name: "Preprocessor/mul"
-  op: "Mul"
-  input: "image_tensor"
-  input: "Preprocessor/mul/x"
-}
-node {
-  name: "Preprocessor/sub"
-  op: "Sub"
-  input: "Preprocessor/mul"
-  input: "Preprocessor/sub/y"
-}
-node {
   name: "FeatureExtractor/MobilenetV2/Conv/Conv2D"
   op: "Conv2D"
-  input: "Preprocessor/sub"
-  input: "FeatureExtractor/MobilenetV2/Conv/weights"
+  input: "normalized_input_image_tensor"
+  input: "normalized_input_image_tensor"
   attr {
     key: "data_format"
     value {
@@ -5568,7 +5556,7 @@ node {
   name: "PriorBox_0"
   op: "PriorBox"
   input: "BoxPredictor_0/BoxEncodingPredictor/BiasAdd"
-  input: "image_tensor"
+  input: "normalized_input_image_tensor"
   attr {
     key: "clip"
     value {
@@ -5635,7 +5623,7 @@ node {
   name: "PriorBox_1"
   op: "PriorBox"
   input: "BoxPredictor_1/BoxEncodingPredictor/BiasAdd"
-  input: "image_tensor"
+  input: "normalized_input_image_tensor"
   attr {
     key: "clip"
     value {
@@ -5708,7 +5696,7 @@ node {
   name: "PriorBox_2"
   op: "PriorBox"
   input: "BoxPredictor_2/BoxEncodingPredictor/BiasAdd"
-  input: "image_tensor"
+  input: "normalized_input_image_tensor"
   attr {
     key: "clip"
     value {
@@ -5781,7 +5769,7 @@ node {
   name: "PriorBox_3"
   op: "PriorBox"
   input: "BoxPredictor_3/BoxEncodingPredictor/BiasAdd"
-  input: "image_tensor"
+  input: "normalized_input_image_tensor"
   attr {
     key: "clip"
     value {
@@ -5854,7 +5842,7 @@ node {
   name: "PriorBox_4"
   op: "PriorBox"
   input: "BoxPredictor_4/BoxEncodingPredictor/BiasAdd"
-  input: "image_tensor"
+  input: "normalized_input_image_tensor"
   attr {
     key: "clip"
     value {
@@ -5927,7 +5915,7 @@ node {
   name: "PriorBox_5"
   op: "PriorBox"
   input: "BoxPredictor_5/BoxEncodingPredictor/BiasAdd"
-  input: "image_tensor"
+  input: "normalized_input_image_tensor"
   attr {
     key: "clip"
     value {
