@@ -1,10 +1,10 @@
 node {
-  name: "normalized_input_image_tensor"
+  name: "image_tensor"
   op: "Placeholder"
   attr {
     key: "dtype"
     value {
-      type: DT_FLOAT
+      type: DT_UINT8
     }
   }
   attr {
@@ -12,13 +12,13 @@ node {
     value {
       shape {
         dim {
-          size: 1
+          size: -1
         }
         dim {
-          size: 600
+          size: -1
         }
         dim {
-          size: 600
+          size: -1
         }
         dim {
           size: 3
@@ -28,10 +28,22 @@ node {
   }
 }
 node {
+  name: "Preprocessor/mul"
+  op: "Mul"
+  input: "image_tensor"
+  input: "Preprocessor/mul/x"
+}
+node {
+  name: "Preprocessor/sub"
+  op: "Sub"
+  input: "Preprocessor/mul"
+  input: "Preprocessor/sub/y"
+}
+node {
   name: "FeatureExtractor/MobilenetV2/Conv/Conv2D"
   op: "Conv2D"
-  input: "normalized_input_image_tensor"
-  input: "normalized_input_image_tensor"
+  input: "Preprocessor/sub"
+  input: "FeatureExtractor/MobilenetV2/Conv/weights"
   attr {
     key: "data_format"
     value {
@@ -3145,9 +3157,81 @@ node {
   input: "FeatureExtractor/MobilenetV2/expanded_conv_13/expand/BatchNorm/FusedBatchNormV3"
 }
 node {
+  name: "BoxPredictor_0/ClassPredictor_depthwise/depthwise"
+  op: "DepthwiseConv2dNative"
+  input: "FeatureExtractor/MobilenetV2/expanded_conv_13/expand/Relu6"
+  input: "BoxPredictor_0/ClassPredictor_depthwise/depthwise_weights"
+  attr {
+    key: "data_format"
+    value {
+      s: "NHWC"
+    }
+  }
+  attr {
+    key: "dilations"
+    value {
+      list {
+        i: 1
+        i: 1
+        i: 1
+        i: 1
+      }
+    }
+  }
+  attr {
+    key: "padding"
+    value {
+      s: "SAME"
+    }
+  }
+  attr {
+    key: "strides"
+    value {
+      list {
+        i: 1
+        i: 1
+        i: 1
+        i: 1
+      }
+    }
+  }
+}
+node {
+  name: "BoxPredictor_0/ClassPredictor_depthwise/BatchNorm/FusedBatchNormV3"
+  op: "FusedBatchNormV3"
+  input: "BoxPredictor_0/ClassPredictor_depthwise/depthwise"
+  input: "BoxPredictor_0/ClassPredictor_depthwise/BatchNorm/gamma"
+  input: "BoxPredictor_0/ClassPredictor_depthwise/BatchNorm/beta"
+  input: "BoxPredictor_0/ClassPredictor_depthwise/BatchNorm/moving_mean"
+  input: "BoxPredictor_0/ClassPredictor_depthwise/BatchNorm/moving_variance"
+  attr {
+    key: "data_format"
+    value {
+      s: "NHWC"
+    }
+  }
+  attr {
+    key: "epsilon"
+    value {
+      f: 0.001
+    }
+  }
+  attr {
+    key: "U"
+    value {
+      type: DT_FLOAT
+    }
+  }
+}
+node {
+  name: "BoxPredictor_0/ClassPredictor_depthwise/Relu6"
+  op: "Relu6"
+  input: "BoxPredictor_0/ClassPredictor_depthwise/BatchNorm/FusedBatchNormV3"
+}
+node {
   name: "BoxPredictor_0/ClassPredictor/Conv2D"
   op: "Conv2D"
-  input: "FeatureExtractor/MobilenetV2/expanded_conv_13/expand/Relu6"
+  input: "BoxPredictor_0/ClassPredictor_depthwise/Relu6"
   input: "BoxPredictor_0/ClassPredictor/weights"
   attr {
     key: "data_format"
@@ -3204,9 +3288,81 @@ node {
   }
 }
 node {
+  name: "BoxPredictor_0/BoxEncodingPredictor_depthwise/depthwise"
+  op: "DepthwiseConv2dNative"
+  input: "FeatureExtractor/MobilenetV2/expanded_conv_13/expand/Relu6"
+  input: "BoxPredictor_0/BoxEncodingPredictor_depthwise/depthwise_weights"
+  attr {
+    key: "data_format"
+    value {
+      s: "NHWC"
+    }
+  }
+  attr {
+    key: "dilations"
+    value {
+      list {
+        i: 1
+        i: 1
+        i: 1
+        i: 1
+      }
+    }
+  }
+  attr {
+    key: "padding"
+    value {
+      s: "SAME"
+    }
+  }
+  attr {
+    key: "strides"
+    value {
+      list {
+        i: 1
+        i: 1
+        i: 1
+        i: 1
+      }
+    }
+  }
+}
+node {
+  name: "BoxPredictor_0/BoxEncodingPredictor_depthwise/BatchNorm/FusedBatchNormV3"
+  op: "FusedBatchNormV3"
+  input: "BoxPredictor_0/BoxEncodingPredictor_depthwise/depthwise"
+  input: "BoxPredictor_0/BoxEncodingPredictor_depthwise/BatchNorm/gamma"
+  input: "BoxPredictor_0/BoxEncodingPredictor_depthwise/BatchNorm/beta"
+  input: "BoxPredictor_0/BoxEncodingPredictor_depthwise/BatchNorm/moving_mean"
+  input: "BoxPredictor_0/BoxEncodingPredictor_depthwise/BatchNorm/moving_variance"
+  attr {
+    key: "data_format"
+    value {
+      s: "NHWC"
+    }
+  }
+  attr {
+    key: "epsilon"
+    value {
+      f: 0.001
+    }
+  }
+  attr {
+    key: "U"
+    value {
+      type: DT_FLOAT
+    }
+  }
+}
+node {
+  name: "BoxPredictor_0/BoxEncodingPredictor_depthwise/Relu6"
+  op: "Relu6"
+  input: "BoxPredictor_0/BoxEncodingPredictor_depthwise/BatchNorm/FusedBatchNormV3"
+}
+node {
   name: "BoxPredictor_0/BoxEncodingPredictor/Conv2D"
   op: "Conv2D"
-  input: "FeatureExtractor/MobilenetV2/expanded_conv_13/expand/Relu6"
+  input: "BoxPredictor_0/BoxEncodingPredictor_depthwise/Relu6"
   input: "BoxPredictor_0/BoxEncodingPredictor/weights"
   attr {
     key: "data_format"
@@ -4201,9 +4357,81 @@ node {
   input: "FeatureExtractor/MobilenetV2/Conv_1/BatchNorm/FusedBatchNormV3"
 }
 node {
+  name: "BoxPredictor_1/ClassPredictor_depthwise/depthwise"
+  op: "DepthwiseConv2dNative"
+  input: "FeatureExtractor/MobilenetV2/Conv_1/Relu6"
+  input: "BoxPredictor_1/ClassPredictor_depthwise/depthwise_weights"
+  attr {
+    key: "data_format"
+    value {
+      s: "NHWC"
+    }
+  }
+  attr {
+    key: "dilations"
+    value {
+      list {
+        i: 1
+        i: 1
+        i: 1
+        i: 1
+      }
+    }
+  }
+  attr {
+    key: "padding"
+    value {
+      s: "SAME"
+    }
+  }
+  attr {
+    key: "strides"
+    value {
+      list {
+        i: 1
+        i: 1
+        i: 1
+        i: 1
+      }
+    }
+  }
+}
+node {
+  name: "BoxPredictor_1/ClassPredictor_depthwise/BatchNorm/FusedBatchNormV3"
+  op: "FusedBatchNormV3"
+  input: "BoxPredictor_1/ClassPredictor_depthwise/depthwise"
+  input: "BoxPredictor_1/ClassPredictor_depthwise/BatchNorm/gamma"
+  input: "BoxPredictor_1/ClassPredictor_depthwise/BatchNorm/beta"
+  input: "BoxPredictor_1/ClassPredictor_depthwise/BatchNorm/moving_mean"
+  input: "BoxPredictor_1/ClassPredictor_depthwise/BatchNorm/moving_variance"
+  attr {
+    key: "data_format"
+    value {
+      s: "NHWC"
+    }
+  }
+  attr {
+    key: "epsilon"
+    value {
+      f: 0.001
+    }
+  }
+  attr {
+    key: "U"
+    value {
+      type: DT_FLOAT
+    }
+  }
+}
+node {
+  name: "BoxPredictor_1/ClassPredictor_depthwise/Relu6"
+  op: "Relu6"
+  input: "BoxPredictor_1/ClassPredictor_depthwise/BatchNorm/FusedBatchNormV3"
+}
+node {
   name: "BoxPredictor_1/ClassPredictor/Conv2D"
   op: "Conv2D"
-  input: "FeatureExtractor/MobilenetV2/Conv_1/Relu6"
+  input: "BoxPredictor_1/ClassPredictor_depthwise/Relu6"
   input: "BoxPredictor_1/ClassPredictor/weights"
   attr {
     key: "data_format"
@@ -4260,9 +4488,81 @@ node {
   }
 }
 node {
+  name: "BoxPredictor_1/BoxEncodingPredictor_depthwise/depthwise"
+  op: "DepthwiseConv2dNative"
+  input: "FeatureExtractor/MobilenetV2/Conv_1/Relu6"
+  input: "BoxPredictor_1/BoxEncodingPredictor_depthwise/depthwise_weights"
+  attr {
+    key: "data_format"
+    value {
+      s: "NHWC"
+    }
+  }
+  attr {
+    key: "dilations"
+    value {
+      list {
+        i: 1
+        i: 1
+        i: 1
+        i: 1
+      }
+    }
+  }
+  attr {
+    key: "padding"
+    value {
+      s: "SAME"
+    }
+  }
+  attr {
+    key: "strides"
+    value {
+      list {
+        i: 1
+        i: 1
+        i: 1
+        i: 1
+      }
+    }
+  }
+}
+node {
+  name: "BoxPredictor_1/BoxEncodingPredictor_depthwise/BatchNorm/FusedBatchNormV3"
+  op: "FusedBatchNormV3"
+  input: "BoxPredictor_1/BoxEncodingPredictor_depthwise/depthwise"
+  input: "BoxPredictor_1/BoxEncodingPredictor_depthwise/BatchNorm/gamma"
+  input: "BoxPredictor_1/BoxEncodingPredictor_depthwise/BatchNorm/beta"
+  input: "BoxPredictor_1/BoxEncodingPredictor_depthwise/BatchNorm/moving_mean"
+  input: "BoxPredictor_1/BoxEncodingPredictor_depthwise/BatchNorm/moving_variance"
+  attr {
+    key: "data_format"
+    value {
+      s: "NHWC"
+    }
+  }
+  attr {
+    key: "epsilon"
+    value {
+      f: 0.001
+    }
+  }
+  attr {
+    key: "U"
+    value {
+      type: DT_FLOAT
+    }
+  }
+}
+node {
+  name: "BoxPredictor_1/BoxEncodingPredictor_depthwise/Relu6"
+  op: "Relu6"
+  input: "BoxPredictor_1/BoxEncodingPredictor_depthwise/BatchNorm/FusedBatchNormV3"
+}
+node {
   name: "BoxPredictor_1/BoxEncodingPredictor/Conv2D"
   op: "Conv2D"
-  input: "FeatureExtractor/MobilenetV2/Conv_1/Relu6"
+  input: "BoxPredictor_1/BoxEncodingPredictor_depthwise/Relu6"
   input: "BoxPredictor_1/BoxEncodingPredictor/weights"
   attr {
     key: "data_format"
@@ -4404,9 +4704,81 @@ node {
   input: "FeatureExtractor/MobilenetV2/layer_19_1_Conv2d_2_1x1_256/BatchNorm/FusedBatchNormV3"
 }
 node {
+  name: "FeatureExtractor/MobilenetV2/layer_19_2_Conv2d_2_3x3_s2_512_depthwise/depthwise"
+  op: "DepthwiseConv2dNative"
+  input: "FeatureExtractor/MobilenetV2/layer_19_1_Conv2d_2_1x1_256/Relu6"
+  input: "FeatureExtractor/MobilenetV2/layer_19_2_Conv2d_2_3x3_s2_512_depthwise/depthwise_weights"
+  attr {
+    key: "data_format"
+    value {
+      s: "NHWC"
+    }
+  }
+  attr {
+    key: "dilations"
+    value {
+      list {
+        i: 1
+        i: 1
+        i: 1
+        i: 1
+      }
+    }
+  }
+  attr {
+    key: "padding"
+    value {
+      s: "SAME"
+    }
+  }
+  attr {
+    key: "strides"
+    value {
+      list {
+        i: 1
+        i: 2
+        i: 2
+        i: 1
+      }
+    }
+  }
+}
+node {
+  name: "FeatureExtractor/MobilenetV2/layer_19_2_Conv2d_2_3x3_s2_512_depthwise/BatchNorm/FusedBatchNormV3"
+  op: "FusedBatchNormV3"
+  input: "FeatureExtractor/MobilenetV2/layer_19_2_Conv2d_2_3x3_s2_512_depthwise/depthwise"
+  input: "FeatureExtractor/MobilenetV2/layer_19_2_Conv2d_2_3x3_s2_512_depthwise/BatchNorm/gamma"
+  input: "FeatureExtractor/MobilenetV2/layer_19_2_Conv2d_2_3x3_s2_512_depthwise/BatchNorm/beta"
+  input: "FeatureExtractor/MobilenetV2/layer_19_2_Conv2d_2_3x3_s2_512_depthwise/BatchNorm/moving_mean"
+  input: "FeatureExtractor/MobilenetV2/layer_19_2_Conv2d_2_3x3_s2_512_depthwise/BatchNorm/moving_variance"
+  attr {
+    key: "data_format"
+    value {
+      s: "NHWC"
+    }
+  }
+  attr {
+    key: "epsilon"
+    value {
+      f: 0.001
+    }
+  }
+  attr {
+    key: "U"
+    value {
+      type: DT_FLOAT
+    }
+  }
+}
+node {
+  name: "FeatureExtractor/MobilenetV2/layer_19_2_Conv2d_2_3x3_s2_512_depthwise/Relu6"
+  op: "Relu6"
+  input: "FeatureExtractor/MobilenetV2/layer_19_2_Conv2d_2_3x3_s2_512_depthwise/BatchNorm/FusedBatchNormV3"
+}
+node {
   name: "FeatureExtractor/MobilenetV2/layer_19_2_Conv2d_2_3x3_s2_512/Conv2D"
   op: "Conv2D"
-  input: "FeatureExtractor/MobilenetV2/layer_19_1_Conv2d_2_1x1_256/Relu6"
+  input: "FeatureExtractor/MobilenetV2/layer_19_2_Conv2d_2_3x3_s2_512_depthwise/Relu6"
   input: "FeatureExtractor/MobilenetV2/layer_19_2_Conv2d_2_3x3_s2_512/weights"
   attr {
     key: "data_format"
@@ -4443,8 +4815,8 @@ node {
     value {
       list {
         i: 1
-        i: 2
-        i: 2
+        i: 1
+        i: 1
         i: 1
       }
     }
@@ -4483,9 +4855,81 @@ node {
   input: "FeatureExtractor/MobilenetV2/layer_19_2_Conv2d_2_3x3_s2_512/BatchNorm/FusedBatchNormV3"
 }
 node {
+  name: "BoxPredictor_2/ClassPredictor_depthwise/depthwise"
+  op: "DepthwiseConv2dNative"
+  input: "FeatureExtractor/MobilenetV2/layer_19_2_Conv2d_2_3x3_s2_512/Relu6"
+  input: "BoxPredictor_2/ClassPredictor_depthwise/depthwise_weights"
+  attr {
+    key: "data_format"
+    value {
+      s: "NHWC"
+    }
+  }
+  attr {
+    key: "dilations"
+    value {
+      list {
+        i: 1
+        i: 1
+        i: 1
+        i: 1
+      }
+    }
+  }
+  attr {
+    key: "padding"
+    value {
+      s: "SAME"
+    }
+  }
+  attr {
+    key: "strides"
+    value {
+      list {
+        i: 1
+        i: 1
+        i: 1
+        i: 1
+      }
+    }
+  }
+}
+node {
+  name: "BoxPredictor_2/ClassPredictor_depthwise/BatchNorm/FusedBatchNormV3"
+  op: "FusedBatchNormV3"
+  input: "BoxPredictor_2/ClassPredictor_depthwise/depthwise"
+  input: "BoxPredictor_2/ClassPredictor_depthwise/BatchNorm/gamma"
+  input: "BoxPredictor_2/ClassPredictor_depthwise/BatchNorm/beta"
+  input: "BoxPredictor_2/ClassPredictor_depthwise/BatchNorm/moving_mean"
+  input: "BoxPredictor_2/ClassPredictor_depthwise/BatchNorm/moving_variance"
+  attr {
+    key: "data_format"
+    value {
+      s: "NHWC"
+    }
+  }
+  attr {
+    key: "epsilon"
+    value {
+      f: 0.001
+    }
+  }
+  attr {
+    key: "U"
+    value {
+      type: DT_FLOAT
+    }
+  }
+}
+node {
+  name: "BoxPredictor_2/ClassPredictor_depthwise/Relu6"
+  op: "Relu6"
+  input: "BoxPredictor_2/ClassPredictor_depthwise/BatchNorm/FusedBatchNormV3"
+}
+node {
   name: "BoxPredictor_2/ClassPredictor/Conv2D"
   op: "Conv2D"
-  input: "FeatureExtractor/MobilenetV2/layer_19_2_Conv2d_2_3x3_s2_512/Relu6"
+  input: "BoxPredictor_2/ClassPredictor_depthwise/Relu6"
   input: "BoxPredictor_2/ClassPredictor/weights"
   attr {
     key: "data_format"
@@ -4542,9 +4986,81 @@ node {
   }
 }
 node {
+  name: "BoxPredictor_2/BoxEncodingPredictor_depthwise/depthwise"
+  op: "DepthwiseConv2dNative"
+  input: "FeatureExtractor/MobilenetV2/layer_19_2_Conv2d_2_3x3_s2_512/Relu6"
+  input: "BoxPredictor_2/BoxEncodingPredictor_depthwise/depthwise_weights"
+  attr {
+    key: "data_format"
+    value {
+      s: "NHWC"
+    }
+  }
+  attr {
+    key: "dilations"
+    value {
+      list {
+        i: 1
+        i: 1
+        i: 1
+        i: 1
+      }
+    }
+  }
+  attr {
+    key: "padding"
+    value {
+      s: "SAME"
+    }
+  }
+  attr {
+    key: "strides"
+    value {
+      list {
+        i: 1
+        i: 1
+        i: 1
+        i: 1
+      }
+    }
+  }
+}
+node {
+  name: "BoxPredictor_2/BoxEncodingPredictor_depthwise/BatchNorm/FusedBatchNormV3"
+  op: "FusedBatchNormV3"
+  input: "BoxPredictor_2/BoxEncodingPredictor_depthwise/depthwise"
+  input: "BoxPredictor_2/BoxEncodingPredictor_depthwise/BatchNorm/gamma"
+  input: "BoxPredictor_2/BoxEncodingPredictor_depthwise/BatchNorm/beta"
+  input: "BoxPredictor_2/BoxEncodingPredictor_depthwise/BatchNorm/moving_mean"
+  input: "BoxPredictor_2/BoxEncodingPredictor_depthwise/BatchNorm/moving_variance"
+  attr {
+    key: "data_format"
+    value {
+      s: "NHWC"
+    }
+  }
+  attr {
+    key: "epsilon"
+    value {
+      f: 0.001
+    }
+  }
+  attr {
+    key: "U"
+    value {
+      type: DT_FLOAT
+    }
+  }
+}
+node {
+  name: "BoxPredictor_2/BoxEncodingPredictor_depthwise/Relu6"
+  op: "Relu6"
+  input: "BoxPredictor_2/BoxEncodingPredictor_depthwise/BatchNorm/FusedBatchNormV3"
+}
+node {
   name: "BoxPredictor_2/BoxEncodingPredictor/Conv2D"
   op: "Conv2D"
-  input: "FeatureExtractor/MobilenetV2/layer_19_2_Conv2d_2_3x3_s2_512/Relu6"
+  input: "BoxPredictor_2/BoxEncodingPredictor_depthwise/Relu6"
   input: "BoxPredictor_2/BoxEncodingPredictor/weights"
   attr {
     key: "data_format"
@@ -4686,9 +5202,81 @@ node {
   input: "FeatureExtractor/MobilenetV2/layer_19_1_Conv2d_3_1x1_128/BatchNorm/FusedBatchNormV3"
 }
 node {
+  name: "FeatureExtractor/MobilenetV2/layer_19_2_Conv2d_3_3x3_s2_256_depthwise/depthwise"
+  op: "DepthwiseConv2dNative"
+  input: "FeatureExtractor/MobilenetV2/layer_19_1_Conv2d_3_1x1_128/Relu6"
+  input: "FeatureExtractor/MobilenetV2/layer_19_2_Conv2d_3_3x3_s2_256_depthwise/depthwise_weights"
+  attr {
+    key: "data_format"
+    value {
+      s: "NHWC"
+    }
+  }
+  attr {
+    key: "dilations"
+    value {
+      list {
+        i: 1
+        i: 1
+        i: 1
+        i: 1
+      }
+    }
+  }
+  attr {
+    key: "padding"
+    value {
+      s: "SAME"
+    }
+  }
+  attr {
+    key: "strides"
+    value {
+      list {
+        i: 1
+        i: 2
+        i: 2
+        i: 1
+      }
+    }
+  }
+}
+node {
+  name: "FeatureExtractor/MobilenetV2/layer_19_2_Conv2d_3_3x3_s2_256_depthwise/BatchNorm/FusedBatchNormV3"
+  op: "FusedBatchNormV3"
+  input: "FeatureExtractor/MobilenetV2/layer_19_2_Conv2d_3_3x3_s2_256_depthwise/depthwise"
+  input: "FeatureExtractor/MobilenetV2/layer_19_2_Conv2d_3_3x3_s2_256_depthwise/BatchNorm/gamma"
+  input: "FeatureExtractor/MobilenetV2/layer_19_2_Conv2d_3_3x3_s2_256_depthwise/BatchNorm/beta"
+  input: "FeatureExtractor/MobilenetV2/layer_19_2_Conv2d_3_3x3_s2_256_depthwise/BatchNorm/moving_mean"
+  input: "FeatureExtractor/MobilenetV2/layer_19_2_Conv2d_3_3x3_s2_256_depthwise/BatchNorm/moving_variance"
+  attr {
+    key: "data_format"
+    value {
+      s: "NHWC"
+    }
+  }
+  attr {
+    key: "epsilon"
+    value {
+      f: 0.001
+    }
+  }
+  attr {
+    key: "U"
+    value {
+      type: DT_FLOAT
+    }
+  }
+}
+node {
+  name: "FeatureExtractor/MobilenetV2/layer_19_2_Conv2d_3_3x3_s2_256_depthwise/Relu6"
+  op: "Relu6"
+  input: "FeatureExtractor/MobilenetV2/layer_19_2_Conv2d_3_3x3_s2_256_depthwise/BatchNorm/FusedBatchNormV3"
+}
+node {
   name: "FeatureExtractor/MobilenetV2/layer_19_2_Conv2d_3_3x3_s2_256/Conv2D"
   op: "Conv2D"
-  input: "FeatureExtractor/MobilenetV2/layer_19_1_Conv2d_3_1x1_128/Relu6"
+  input: "FeatureExtractor/MobilenetV2/layer_19_2_Conv2d_3_3x3_s2_256_depthwise/Relu6"
   input: "FeatureExtractor/MobilenetV2/layer_19_2_Conv2d_3_3x3_s2_256/weights"
   attr {
     key: "data_format"
@@ -4725,8 +5313,8 @@ node {
     value {
       list {
         i: 1
-        i: 2
-        i: 2
+        i: 1
+        i: 1
         i: 1
       }
     }
@@ -4765,9 +5353,81 @@ node {
   input: "FeatureExtractor/MobilenetV2/layer_19_2_Conv2d_3_3x3_s2_256/BatchNorm/FusedBatchNormV3"
 }
 node {
+  name: "BoxPredictor_3/ClassPredictor_depthwise/depthwise"
+  op: "DepthwiseConv2dNative"
+  input: "FeatureExtractor/MobilenetV2/layer_19_2_Conv2d_3_3x3_s2_256/Relu6"
+  input: "BoxPredictor_3/ClassPredictor_depthwise/depthwise_weights"
+  attr {
+    key: "data_format"
+    value {
+      s: "NHWC"
+    }
+  }
+  attr {
+    key: "dilations"
+    value {
+      list {
+        i: 1
+        i: 1
+        i: 1
+        i: 1
+      }
+    }
+  }
+  attr {
+    key: "padding"
+    value {
+      s: "SAME"
+    }
+  }
+  attr {
+    key: "strides"
+    value {
+      list {
+        i: 1
+        i: 1
+        i: 1
+        i: 1
+      }
+    }
+  }
+}
+node {
+  name: "BoxPredictor_3/ClassPredictor_depthwise/BatchNorm/FusedBatchNormV3"
+  op: "FusedBatchNormV3"
+  input: "BoxPredictor_3/ClassPredictor_depthwise/depthwise"
+  input: "BoxPredictor_3/ClassPredictor_depthwise/BatchNorm/gamma"
+  input: "BoxPredictor_3/ClassPredictor_depthwise/BatchNorm/beta"
+  input: "BoxPredictor_3/ClassPredictor_depthwise/BatchNorm/moving_mean"
+  input: "BoxPredictor_3/ClassPredictor_depthwise/BatchNorm/moving_variance"
+  attr {
+    key: "data_format"
+    value {
+      s: "NHWC"
+    }
+  }
+  attr {
+    key: "epsilon"
+    value {
+      f: 0.001
+    }
+  }
+  attr {
+    key: "U"
+    value {
+      type: DT_FLOAT
+    }
+  }
+}
+node {
+  name: "BoxPredictor_3/ClassPredictor_depthwise/Relu6"
+  op: "Relu6"
+  input: "BoxPredictor_3/ClassPredictor_depthwise/BatchNorm/FusedBatchNormV3"
+}
+node {
   name: "BoxPredictor_3/ClassPredictor/Conv2D"
   op: "Conv2D"
-  input: "FeatureExtractor/MobilenetV2/layer_19_2_Conv2d_3_3x3_s2_256/Relu6"
+  input: "BoxPredictor_3/ClassPredictor_depthwise/Relu6"
   input: "BoxPredictor_3/ClassPredictor/weights"
   attr {
     key: "data_format"
@@ -4824,9 +5484,81 @@ node {
   }
 }
 node {
+  name: "BoxPredictor_3/BoxEncodingPredictor_depthwise/depthwise"
+  op: "DepthwiseConv2dNative"
+  input: "FeatureExtractor/MobilenetV2/layer_19_2_Conv2d_3_3x3_s2_256/Relu6"
+  input: "BoxPredictor_3/BoxEncodingPredictor_depthwise/depthwise_weights"
+  attr {
+    key: "data_format"
+    value {
+      s: "NHWC"
+    }
+  }
+  attr {
+    key: "dilations"
+    value {
+      list {
+        i: 1
+        i: 1
+        i: 1
+        i: 1
+      }
+    }
+  }
+  attr {
+    key: "padding"
+    value {
+      s: "SAME"
+    }
+  }
+  attr {
+    key: "strides"
+    value {
+      list {
+        i: 1
+        i: 1
+        i: 1
+        i: 1
+      }
+    }
+  }
+}
+node {
+  name: "BoxPredictor_3/BoxEncodingPredictor_depthwise/BatchNorm/FusedBatchNormV3"
+  op: "FusedBatchNormV3"
+  input: "BoxPredictor_3/BoxEncodingPredictor_depthwise/depthwise"
+  input: "BoxPredictor_3/BoxEncodingPredictor_depthwise/BatchNorm/gamma"
+  input: "BoxPredictor_3/BoxEncodingPredictor_depthwise/BatchNorm/beta"
+  input: "BoxPredictor_3/BoxEncodingPredictor_depthwise/BatchNorm/moving_mean"
+  input: "BoxPredictor_3/BoxEncodingPredictor_depthwise/BatchNorm/moving_variance"
+  attr {
+    key: "data_format"
+    value {
+      s: "NHWC"
+    }
+  }
+  attr {
+    key: "epsilon"
+    value {
+      f: 0.001
+    }
+  }
+  attr {
+    key: "U"
+    value {
+      type: DT_FLOAT
+    }
+  }
+}
+node {
+  name: "BoxPredictor_3/BoxEncodingPredictor_depthwise/Relu6"
+  op: "Relu6"
+  input: "BoxPredictor_3/BoxEncodingPredictor_depthwise/BatchNorm/FusedBatchNormV3"
+}
+node {
   name: "BoxPredictor_3/BoxEncodingPredictor/Conv2D"
   op: "Conv2D"
-  input: "FeatureExtractor/MobilenetV2/layer_19_2_Conv2d_3_3x3_s2_256/Relu6"
+  input: "BoxPredictor_3/BoxEncodingPredictor_depthwise/Relu6"
   input: "BoxPredictor_3/BoxEncodingPredictor/weights"
   attr {
     key: "data_format"
@@ -4968,9 +5700,81 @@ node {
   input: "FeatureExtractor/MobilenetV2/layer_19_1_Conv2d_4_1x1_128/BatchNorm/FusedBatchNormV3"
 }
 node {
+  name: "FeatureExtractor/MobilenetV2/layer_19_2_Conv2d_4_3x3_s2_256_depthwise/depthwise"
+  op: "DepthwiseConv2dNative"
+  input: "FeatureExtractor/MobilenetV2/layer_19_1_Conv2d_4_1x1_128/Relu6"
+  input: "FeatureExtractor/MobilenetV2/layer_19_2_Conv2d_4_3x3_s2_256_depthwise/depthwise_weights"
+  attr {
+    key: "data_format"
+    value {
+      s: "NHWC"
+    }
+  }
+  attr {
+    key: "dilations"
+    value {
+      list {
+        i: 1
+        i: 1
+        i: 1
+        i: 1
+      }
+    }
+  }
+  attr {
+    key: "padding"
+    value {
+      s: "SAME"
+    }
+  }
+  attr {
+    key: "strides"
+    value {
+      list {
+        i: 1
+        i: 2
+        i: 2
+        i: 1
+      }
+    }
+  }
+}
+node {
+  name: "FeatureExtractor/MobilenetV2/layer_19_2_Conv2d_4_3x3_s2_256_depthwise/BatchNorm/FusedBatchNormV3"
+  op: "FusedBatchNormV3"
+  input: "FeatureExtractor/MobilenetV2/layer_19_2_Conv2d_4_3x3_s2_256_depthwise/depthwise"
+  input: "FeatureExtractor/MobilenetV2/layer_19_2_Conv2d_4_3x3_s2_256_depthwise/BatchNorm/gamma"
+  input: "FeatureExtractor/MobilenetV2/layer_19_2_Conv2d_4_3x3_s2_256_depthwise/BatchNorm/beta"
+  input: "FeatureExtractor/MobilenetV2/layer_19_2_Conv2d_4_3x3_s2_256_depthwise/BatchNorm/moving_mean"
+  input: "FeatureExtractor/MobilenetV2/layer_19_2_Conv2d_4_3x3_s2_256_depthwise/BatchNorm/moving_variance"
+  attr {
+    key: "data_format"
+    value {
+      s: "NHWC"
+    }
+  }
+  attr {
+    key: "epsilon"
+    value {
+      f: 0.001
+    }
+  }
+  attr {
+    key: "U"
+    value {
+      type: DT_FLOAT
+    }
+  }
+}
+node {
+  name: "FeatureExtractor/MobilenetV2/layer_19_2_Conv2d_4_3x3_s2_256_depthwise/Relu6"
+  op: "Relu6"
+  input: "FeatureExtractor/MobilenetV2/layer_19_2_Conv2d_4_3x3_s2_256_depthwise/BatchNorm/FusedBatchNormV3"
+}
+node {
   name: "FeatureExtractor/MobilenetV2/layer_19_2_Conv2d_4_3x3_s2_256/Conv2D"
   op: "Conv2D"
-  input: "FeatureExtractor/MobilenetV2/layer_19_1_Conv2d_4_1x1_128/Relu6"
+  input: "FeatureExtractor/MobilenetV2/layer_19_2_Conv2d_4_3x3_s2_256_depthwise/Relu6"
   input: "FeatureExtractor/MobilenetV2/layer_19_2_Conv2d_4_3x3_s2_256/weights"
   attr {
     key: "data_format"
@@ -5007,8 +5811,8 @@ node {
     value {
       list {
         i: 1
-        i: 2
-        i: 2
+        i: 1
+        i: 1
         i: 1
       }
     }
@@ -5047,9 +5851,81 @@ node {
   input: "FeatureExtractor/MobilenetV2/layer_19_2_Conv2d_4_3x3_s2_256/BatchNorm/FusedBatchNormV3"
 }
 node {
+  name: "BoxPredictor_4/ClassPredictor_depthwise/depthwise"
+  op: "DepthwiseConv2dNative"
+  input: "FeatureExtractor/MobilenetV2/layer_19_2_Conv2d_4_3x3_s2_256/Relu6"
+  input: "BoxPredictor_4/ClassPredictor_depthwise/depthwise_weights"
+  attr {
+    key: "data_format"
+    value {
+      s: "NHWC"
+    }
+  }
+  attr {
+    key: "dilations"
+    value {
+      list {
+        i: 1
+        i: 1
+        i: 1
+        i: 1
+      }
+    }
+  }
+  attr {
+    key: "padding"
+    value {
+      s: "SAME"
+    }
+  }
+  attr {
+    key: "strides"
+    value {
+      list {
+        i: 1
+        i: 1
+        i: 1
+        i: 1
+      }
+    }
+  }
+}
+node {
+  name: "BoxPredictor_4/ClassPredictor_depthwise/BatchNorm/FusedBatchNormV3"
+  op: "FusedBatchNormV3"
+  input: "BoxPredictor_4/ClassPredictor_depthwise/depthwise"
+  input: "BoxPredictor_4/ClassPredictor_depthwise/BatchNorm/gamma"
+  input: "BoxPredictor_4/ClassPredictor_depthwise/BatchNorm/beta"
+  input: "BoxPredictor_4/ClassPredictor_depthwise/BatchNorm/moving_mean"
+  input: "BoxPredictor_4/ClassPredictor_depthwise/BatchNorm/moving_variance"
+  attr {
+    key: "data_format"
+    value {
+      s: "NHWC"
+    }
+  }
+  attr {
+    key: "epsilon"
+    value {
+      f: 0.001
+    }
+  }
+  attr {
+    key: "U"
+    value {
+      type: DT_FLOAT
+    }
+  }
+}
+node {
+  name: "BoxPredictor_4/ClassPredictor_depthwise/Relu6"
+  op: "Relu6"
+  input: "BoxPredictor_4/ClassPredictor_depthwise/BatchNorm/FusedBatchNormV3"
+}
+node {
   name: "BoxPredictor_4/ClassPredictor/Conv2D"
   op: "Conv2D"
-  input: "FeatureExtractor/MobilenetV2/layer_19_2_Conv2d_4_3x3_s2_256/Relu6"
+  input: "BoxPredictor_4/ClassPredictor_depthwise/Relu6"
   input: "BoxPredictor_4/ClassPredictor/weights"
   attr {
     key: "data_format"
@@ -5106,9 +5982,81 @@ node {
   }
 }
 node {
+  name: "BoxPredictor_4/BoxEncodingPredictor_depthwise/depthwise"
+  op: "DepthwiseConv2dNative"
+  input: "FeatureExtractor/MobilenetV2/layer_19_2_Conv2d_4_3x3_s2_256/Relu6"
+  input: "BoxPredictor_4/BoxEncodingPredictor_depthwise/depthwise_weights"
+  attr {
+    key: "data_format"
+    value {
+      s: "NHWC"
+    }
+  }
+  attr {
+    key: "dilations"
+    value {
+      list {
+        i: 1
+        i: 1
+        i: 1
+        i: 1
+      }
+    }
+  }
+  attr {
+    key: "padding"
+    value {
+      s: "SAME"
+    }
+  }
+  attr {
+    key: "strides"
+    value {
+      list {
+        i: 1
+        i: 1
+        i: 1
+        i: 1
+      }
+    }
+  }
+}
+node {
+  name: "BoxPredictor_4/BoxEncodingPredictor_depthwise/BatchNorm/FusedBatchNormV3"
+  op: "FusedBatchNormV3"
+  input: "BoxPredictor_4/BoxEncodingPredictor_depthwise/depthwise"
+  input: "BoxPredictor_4/BoxEncodingPredictor_depthwise/BatchNorm/gamma"
+  input: "BoxPredictor_4/BoxEncodingPredictor_depthwise/BatchNorm/beta"
+  input: "BoxPredictor_4/BoxEncodingPredictor_depthwise/BatchNorm/moving_mean"
+  input: "BoxPredictor_4/BoxEncodingPredictor_depthwise/BatchNorm/moving_variance"
+  attr {
+    key: "data_format"
+    value {
+      s: "NHWC"
+    }
+  }
+  attr {
+    key: "epsilon"
+    value {
+      f: 0.001
+    }
+  }
+  attr {
+    key: "U"
+    value {
+      type: DT_FLOAT
+    }
+  }
+}
+node {
+  name: "BoxPredictor_4/BoxEncodingPredictor_depthwise/Relu6"
+  op: "Relu6"
+  input: "BoxPredictor_4/BoxEncodingPredictor_depthwise/BatchNorm/FusedBatchNormV3"
+}
+node {
   name: "BoxPredictor_4/BoxEncodingPredictor/Conv2D"
   op: "Conv2D"
-  input: "FeatureExtractor/MobilenetV2/layer_19_2_Conv2d_4_3x3_s2_256/Relu6"
+  input: "BoxPredictor_4/BoxEncodingPredictor_depthwise/Relu6"
   input: "BoxPredictor_4/BoxEncodingPredictor/weights"
   attr {
     key: "data_format"
@@ -5250,9 +6198,81 @@ node {
   input: "FeatureExtractor/MobilenetV2/layer_19_1_Conv2d_5_1x1_64/BatchNorm/FusedBatchNormV3"
 }
 node {
+  name: "FeatureExtractor/MobilenetV2/layer_19_2_Conv2d_5_3x3_s2_128_depthwise/depthwise"
+  op: "DepthwiseConv2dNative"
+  input: "FeatureExtractor/MobilenetV2/layer_19_1_Conv2d_5_1x1_64/Relu6"
+  input: "FeatureExtractor/MobilenetV2/layer_19_2_Conv2d_5_3x3_s2_128_depthwise/depthwise_weights"
+  attr {
+    key: "data_format"
+    value {
+      s: "NHWC"
+    }
+  }
+  attr {
+    key: "dilations"
+    value {
+      list {
+        i: 1
+        i: 1
+        i: 1
+        i: 1
+      }
+    }
+  }
+  attr {
+    key: "padding"
+    value {
+      s: "SAME"
+    }
+  }
+  attr {
+    key: "strides"
+    value {
+      list {
+        i: 1
+        i: 2
+        i: 2
+        i: 1
+      }
+    }
+  }
+}
+node {
+  name: "FeatureExtractor/MobilenetV2/layer_19_2_Conv2d_5_3x3_s2_128_depthwise/BatchNorm/FusedBatchNormV3"
+  op: "FusedBatchNormV3"
+  input: "FeatureExtractor/MobilenetV2/layer_19_2_Conv2d_5_3x3_s2_128_depthwise/depthwise"
+  input: "FeatureExtractor/MobilenetV2/layer_19_2_Conv2d_5_3x3_s2_128_depthwise/BatchNorm/gamma"
+  input: "FeatureExtractor/MobilenetV2/layer_19_2_Conv2d_5_3x3_s2_128_depthwise/BatchNorm/beta"
+  input: "FeatureExtractor/MobilenetV2/layer_19_2_Conv2d_5_3x3_s2_128_depthwise/BatchNorm/moving_mean"
+  input: "FeatureExtractor/MobilenetV2/layer_19_2_Conv2d_5_3x3_s2_128_depthwise/BatchNorm/moving_variance"
+  attr {
+    key: "data_format"
+    value {
+      s: "NHWC"
+    }
+  }
+  attr {
+    key: "epsilon"
+    value {
+      f: 0.001
+    }
+  }
+  attr {
+    key: "U"
+    value {
+      type: DT_FLOAT
+    }
+  }
+}
+node {
+  name: "FeatureExtractor/MobilenetV2/layer_19_2_Conv2d_5_3x3_s2_128_depthwise/Relu6"
+  op: "Relu6"
+  input: "FeatureExtractor/MobilenetV2/layer_19_2_Conv2d_5_3x3_s2_128_depthwise/BatchNorm/FusedBatchNormV3"
+}
+node {
   name: "FeatureExtractor/MobilenetV2/layer_19_2_Conv2d_5_3x3_s2_128/Conv2D"
   op: "Conv2D"
-  input: "FeatureExtractor/MobilenetV2/layer_19_1_Conv2d_5_1x1_64/Relu6"
+  input: "FeatureExtractor/MobilenetV2/layer_19_2_Conv2d_5_3x3_s2_128_depthwise/Relu6"
   input: "FeatureExtractor/MobilenetV2/layer_19_2_Conv2d_5_3x3_s2_128/weights"
   attr {
     key: "data_format"
@@ -5289,8 +6309,8 @@ node {
     value {
       list {
         i: 1
-        i: 2
-        i: 2
+        i: 1
+        i: 1
         i: 1
       }
     }
@@ -5329,9 +6349,81 @@ node {
   input: "FeatureExtractor/MobilenetV2/layer_19_2_Conv2d_5_3x3_s2_128/BatchNorm/FusedBatchNormV3"
 }
 node {
+  name: "BoxPredictor_5/ClassPredictor_depthwise/depthwise"
+  op: "DepthwiseConv2dNative"
+  input: "FeatureExtractor/MobilenetV2/layer_19_2_Conv2d_5_3x3_s2_128/Relu6"
+  input: "BoxPredictor_5/ClassPredictor_depthwise/depthwise_weights"
+  attr {
+    key: "data_format"
+    value {
+      s: "NHWC"
+    }
+  }
+  attr {
+    key: "dilations"
+    value {
+      list {
+        i: 1
+        i: 1
+        i: 1
+        i: 1
+      }
+    }
+  }
+  attr {
+    key: "padding"
+    value {
+      s: "SAME"
+    }
+  }
+  attr {
+    key: "strides"
+    value {
+      list {
+        i: 1
+        i: 1
+        i: 1
+        i: 1
+      }
+    }
+  }
+}
+node {
+  name: "BoxPredictor_5/ClassPredictor_depthwise/BatchNorm/FusedBatchNormV3"
+  op: "FusedBatchNormV3"
+  input: "BoxPredictor_5/ClassPredictor_depthwise/depthwise"
+  input: "BoxPredictor_5/ClassPredictor_depthwise/BatchNorm/gamma"
+  input: "BoxPredictor_5/ClassPredictor_depthwise/BatchNorm/beta"
+  input: "BoxPredictor_5/ClassPredictor_depthwise/BatchNorm/moving_mean"
+  input: "BoxPredictor_5/ClassPredictor_depthwise/BatchNorm/moving_variance"
+  attr {
+    key: "data_format"
+    value {
+      s: "NHWC"
+    }
+  }
+  attr {
+    key: "epsilon"
+    value {
+      f: 0.001
+    }
+  }
+  attr {
+    key: "U"
+    value {
+      type: DT_FLOAT
+    }
+  }
+}
+node {
+  name: "BoxPredictor_5/ClassPredictor_depthwise/Relu6"
+  op: "Relu6"
+  input: "BoxPredictor_5/ClassPredictor_depthwise/BatchNorm/FusedBatchNormV3"
+}
+node {
   name: "BoxPredictor_5/ClassPredictor/Conv2D"
   op: "Conv2D"
-  input: "FeatureExtractor/MobilenetV2/layer_19_2_Conv2d_5_3x3_s2_128/Relu6"
+  input: "BoxPredictor_5/ClassPredictor_depthwise/Relu6"
   input: "BoxPredictor_5/ClassPredictor/weights"
   attr {
     key: "data_format"
@@ -5388,9 +6480,81 @@ node {
   }
 }
 node {
+  name: "BoxPredictor_5/BoxEncodingPredictor_depthwise/depthwise"
+  op: "DepthwiseConv2dNative"
+  input: "FeatureExtractor/MobilenetV2/layer_19_2_Conv2d_5_3x3_s2_128/Relu6"
+  input: "BoxPredictor_5/BoxEncodingPredictor_depthwise/depthwise_weights"
+  attr {
+    key: "data_format"
+    value {
+      s: "NHWC"
+    }
+  }
+  attr {
+    key: "dilations"
+    value {
+      list {
+        i: 1
+        i: 1
+        i: 1
+        i: 1
+      }
+    }
+  }
+  attr {
+    key: "padding"
+    value {
+      s: "SAME"
+    }
+  }
+  attr {
+    key: "strides"
+    value {
+      list {
+        i: 1
+        i: 1
+        i: 1
+        i: 1
+      }
+    }
+  }
+}
+node {
+  name: "BoxPredictor_5/BoxEncodingPredictor_depthwise/BatchNorm/FusedBatchNormV3"
+  op: "FusedBatchNormV3"
+  input: "BoxPredictor_5/BoxEncodingPredictor_depthwise/depthwise"
+  input: "BoxPredictor_5/BoxEncodingPredictor_depthwise/BatchNorm/gamma"
+  input: "BoxPredictor_5/BoxEncodingPredictor_depthwise/BatchNorm/beta"
+  input: "BoxPredictor_5/BoxEncodingPredictor_depthwise/BatchNorm/moving_mean"
+  input: "BoxPredictor_5/BoxEncodingPredictor_depthwise/BatchNorm/moving_variance"
+  attr {
+    key: "data_format"
+    value {
+      s: "NHWC"
+    }
+  }
+  attr {
+    key: "epsilon"
+    value {
+      f: 0.001
+    }
+  }
+  attr {
+    key: "U"
+    value {
+      type: DT_FLOAT
+    }
+  }
+}
+node {
+  name: "BoxPredictor_5/BoxEncodingPredictor_depthwise/Relu6"
+  op: "Relu6"
+  input: "BoxPredictor_5/BoxEncodingPredictor_depthwise/BatchNorm/FusedBatchNormV3"
+}
+node {
   name: "BoxPredictor_5/BoxEncodingPredictor/Conv2D"
   op: "Conv2D"
-  input: "FeatureExtractor/MobilenetV2/layer_19_2_Conv2d_5_3x3_s2_128/Relu6"
+  input: "BoxPredictor_5/BoxEncodingPredictor_depthwise/Relu6"
   input: "BoxPredictor_5/BoxEncodingPredictor/weights"
   attr {
     key: "data_format"
@@ -5556,7 +6720,7 @@ node {
   name: "PriorBox_0"
   op: "PriorBox"
   input: "BoxPredictor_0/BoxEncodingPredictor/BiasAdd"
-  input: "normalized_input_image_tensor"
+  input: "image_tensor"
   attr {
     key: "clip"
     value {
@@ -5574,9 +6738,9 @@ node {
     value {
       tensor {
         dtype: DT_FLOAT
-        float_val: 60.0
+        float_val: 30.0
+        float_val: 42.42640687119285
         float_val: 84.8528137423857
-        float_val: 169.7056274847714
         tensor_shape {
           dim {
             size: 3
@@ -5607,9 +6771,9 @@ node {
     value {
       tensor {
         dtype: DT_FLOAT
-        float_val: 60.0
-        float_val: 169.70562748477144
+        float_val: 30.0
         float_val: 84.85281374238572
+        float_val: 42.42640687119286
         tensor_shape {
           dim {
             size: 3
@@ -5623,7 +6787,7 @@ node {
   name: "PriorBox_1"
   op: "PriorBox"
   input: "BoxPredictor_1/BoxEncodingPredictor/BiasAdd"
-  input: "normalized_input_image_tensor"
+  input: "image_tensor"
   attr {
     key: "clip"
     value {
@@ -5641,12 +6805,12 @@ node {
     value {
       tensor {
         dtype: DT_FLOAT
-        float_val: 363.7488574870473
-        float_val: 257.2092837779503
-        float_val: 210.0
+        float_val: 105.0
+        float_val: 74.24621202458748
         float_val: 148.49242404917496
-        float_val: 296.9848480983499
-        float_val: 250.99800796022268
+        float_val: 85.73214099741125
+        float_val: 181.87442874352365
+        float_val: 125.49900398011134
         tensor_shape {
           dim {
             size: 6
@@ -5677,12 +6841,12 @@ node {
     value {
       tensor {
         dtype: DT_FLOAT
-        float_val: 121.23749420043289
-        float_val: 171.45570856638165
-        float_val: 210.0
-        float_val: 296.98484809834997
+        float_val: 105.0
         float_val: 148.49242404917499
-        float_val: 250.99800796022268
+        float_val: 74.24621202458749
+        float_val: 128.59821149611685
+        float_val: 60.618747100216446
+        float_val: 125.49900398011134
         tensor_shape {
           dim {
             size: 6
@@ -5696,7 +6860,7 @@ node {
   name: "PriorBox_2"
   op: "PriorBox"
   input: "BoxPredictor_2/BoxEncodingPredictor/BiasAdd"
-  input: "normalized_input_image_tensor"
+  input: "image_tensor"
   attr {
     key: "clip"
     value {
@@ -5714,12 +6878,12 @@ node {
     value {
       tensor {
         dtype: DT_FLOAT
-        float_val: 519.6412249814962
-        float_val: 367.4418339685004
-        float_val: 300.0
+        float_val: 150.0
+        float_val: 106.06601717798212
         float_val: 212.13203435596424
-        float_val: 424.2640687119285
-        float_val: 342.0526275297414
+        float_val: 122.47448713915892
+        float_val: 259.8206124907481
+        float_val: 171.0263137648707
         tensor_shape {
           dim {
             size: 6
@@ -5750,12 +6914,12 @@ node {
     value {
       tensor {
         dtype: DT_FLOAT
-        float_val: 173.1964202863327
-        float_val: 244.93672652340234
-        float_val: 300.0
-        float_val: 424.26406871192853
+        float_val: 150.0
         float_val: 212.13203435596427
-        float_val: 342.0526275297414
+        float_val: 106.06601717798213
+        float_val: 183.71173070873834
+        float_val: 86.59821014316636
+        float_val: 171.0263137648707
         tensor_shape {
           dim {
             size: 6
@@ -5769,7 +6933,7 @@ node {
   name: "PriorBox_3"
   op: "PriorBox"
   input: "BoxPredictor_3/BoxEncodingPredictor/BiasAdd"
-  input: "normalized_input_image_tensor"
+  input: "image_tensor"
   attr {
     key: "clip"
     value {
@@ -5787,12 +6951,12 @@ node {
     value {
       tensor {
         dtype: DT_FLOAT
-        float_val: 675.5335924759452
-        float_val: 477.67438415905053
-        float_val: 390.0
+        float_val: 195.0
+        float_val: 137.88582233137677
         float_val: 275.77164466275354
-        float_val: 551.5432893255071
-        float_val: 432.66615305567876
+        float_val: 159.2168332809066
+        float_val: 337.7667962379726
+        float_val: 216.33307652783938
         tensor_shape {
           dim {
             size: 6
@@ -5823,12 +6987,12 @@ node {
     value {
       tensor {
         dtype: DT_FLOAT
-        float_val: 225.15534637223254
-        float_val: 318.41774448042304
-        float_val: 390.0
-        float_val: 551.5432893255071
+        float_val: 195.0
         float_val: 275.77164466275354
-        float_val: 432.66615305567876
+        float_val: 137.88582233137677
+        float_val: 238.82524992135984
+        float_val: 112.57767318611627
+        float_val: 216.33307652783938
         tensor_shape {
           dim {
             size: 6
@@ -5842,7 +7006,7 @@ node {
   name: "PriorBox_4"
   op: "PriorBox"
   input: "BoxPredictor_4/BoxEncodingPredictor/BiasAdd"
-  input: "normalized_input_image_tensor"
+  input: "image_tensor"
   attr {
     key: "clip"
     value {
@@ -5860,12 +7024,12 @@ node {
     value {
       tensor {
         dtype: DT_FLOAT
-        float_val: 831.4259599703939
-        float_val: 587.9069343496008
-        float_val: 480.0
+        float_val: 240.0
+        float_val: 169.7056274847714
         float_val: 339.4112549695428
-        float_val: 678.8225099390856
-        float_val: 523.0678732248808
+        float_val: 195.95917942265427
+        float_val: 415.71297998519697
+        float_val: 261.5339366124404
         tensor_shape {
           dim {
             size: 6
@@ -5896,12 +7060,12 @@ node {
     value {
       tensor {
         dtype: DT_FLOAT
-        float_val: 277.11427245813235
-        float_val: 391.8987624374438
-        float_val: 480.0
-        float_val: 678.8225099390858
+        float_val: 240.0
         float_val: 339.4112549695429
-        float_val: 523.0678732248808
+        float_val: 169.70562748477144
+        float_val: 293.93876913398134
+        float_val: 138.55713622906617
+        float_val: 261.5339366124404
         tensor_shape {
           dim {
             size: 6
@@ -5915,7 +7079,7 @@ node {
   name: "PriorBox_5"
   op: "PriorBox"
   input: "BoxPredictor_5/BoxEncodingPredictor/BiasAdd"
-  input: "normalized_input_image_tensor"
+  input: "image_tensor"
   attr {
     key: "clip"
     value {
@@ -5933,12 +7097,12 @@ node {
     value {
       tensor {
         dtype: DT_FLOAT
-        float_val: 987.3183274648428
-        float_val: 698.1394845401508
-        float_val: 570.0
+        float_val: 285.0
+        float_val: 201.52543263816602
         float_val: 403.05086527633205
-        float_val: 806.1017305526641
-        float_val: 584.8076606885378
+        float_val: 232.70152556440192
+        float_val: 493.6591637324214
+        float_val: 292.4038303442689
         tensor_shape {
           dim {
             size: 6
@@ -5969,12 +7133,12 @@ node {
     value {
       tensor {
         dtype: DT_FLOAT
-        float_val: 329.07319854403215
-        float_val: 465.37978039446443
-        float_val: 570.0
-        float_val: 806.1017305526642
+        float_val: 285.0
         float_val: 403.0508652763321
-        float_val: 584.8076606885378
+        float_val: 201.52543263816605
+        float_val: 349.0522883466028
+        float_val: 164.53659927201608
+        float_val: 292.4038303442689
         tensor_shape {
           dim {
             size: 6
@@ -6005,7 +7169,7 @@ node {
         dtype: DT_INT32
         int_val: 0
         int_val: -1
-        int_val: 6
+        int_val: 7
         tensor_shape {
           dim {
             size: 3
@@ -6070,7 +7234,7 @@ node {
   attr {
     key: "num_classes"
     value {
-      i: 6
+      i: 7
     }
   }
   attr {
