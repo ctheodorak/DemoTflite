@@ -1,6 +1,7 @@
 ???
-blue_chair
+Omega
 black_chair
 monitor
-printer
+AirInv
+AirMits
 other
